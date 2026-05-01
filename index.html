@@ -78,10 +78,11 @@ const SEEKERZ_CTA = 'https://seekerz.vercel.app/sign-up?role=brand';
  
 const LOADING_MSGS = ['Web siteniz inceleniyor...','Sosyal medya varlığınız aranıyor...','Video içerik durumunuz değerlendiriliyor...','Rakiplerinizle karşılaştırılıyor...','Yapay zeka videosu potansiyeli hesaplanıyor...','Kişiselleştirilmiş rapor hazırlanıyor...'];
  
-const SYSTEM_PROMPT = `KRITIK: Yanıtın ilk karakteri { olmalı. Hiçbir açıklama, giriş cümlesi veya markdown yazma. Sadece ham JSON.
+const SYSTEM_PROMPT = `KRITIK KURAL: Sadece ham JSON döndür. { ile başla } ile bit. Açıklama yazma. Markdown kullanma.
+KRITIK: Yanıtın ilk karakteri { olmalı. Hiçbir açıklama, giriş cümlesi veya markdown yazma. Sadece ham JSON.
 Sen bir dijital pazarlama ve yapay zeka video içerik uzmanısın. Verilen web sitesini gerçekten ziyaret et ve analiz et. Sonucu SADECE geçerli JSON olarak ver, başka hiçbir şey yazma, markdown kullanma.
 JSON yapısı:
-{"score":0-100,"verdict":"var","summary":"2-3 cümlelik özet Türkçe","reasons":["neden 1","neden 2","neden 3"],"digital_presence":{"instagram":true,"tiktok":false,"youtube":false,"website_video":false,"active_ads":false},"video_ideas":[{"title":"Video başlığı","platform":"TikTok/Reels","scene":"Sahne açıklaması: kamera nerede açılıyor, ne görünüyor, hangi an yakalanıyor, nasıl bitiyor — 2-3 cümle, okuyucu videoyu zihninde canlandırabilmeli","hook":"İlk 3 saniyede söylenecek cümle","why":"Bu format neden bu marka için işe yarar — 1 cümle"},{"title":"Video başlığı 2","platform":"Instagram/YouTube","scene":"Sahne açıklaması","hook":"İlk 3 saniyede söylenecek cümle","why":"Neden işe yarar"}],"first_step":"Script konusunda somut, eyleme geçilebilir yönlendirme — 2 cümle"}`;
+{"score":0-100,"verdict":"var","summary":"2-3 cümlelik özet Türkçe","reasons":["neden 1","neden 2","neden 3"],"digital_presence":{"instagram":true,"tiktok":false,"youtube":false,"website_video":false,"active_ads":false},"video_ideas":[{"title":"kısa başlık","platform":"TikTok/Reels","scene":"max 1 cümle sahne","hook":"hook cümlesi","why":"1 cümle"},...],"first_step":"Script konusunda somut, eyleme geçilebilir yönlendirme — 2 cümle"}`;
  
 let state = { screen:'password', name:'', email:'', website:'', report:null, loadingIdx:0, progress:0, error:'' };
 let loadingTimer = null;
@@ -246,7 +247,7 @@ async function runAnalysis(name, email, website) {
     const res = await fetch('/api/analyze', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:4000, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
     });
     const data = await res.json();
     console.log('[runAnalysis] Full API response:', JSON.stringify(data, null, 2));
