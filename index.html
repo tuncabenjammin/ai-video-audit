@@ -78,11 +78,20 @@ const SEEKERZ_CTA = 'https://seekerz.vercel.app/sign-up?role=brand';
  
 const LOADING_MSGS = ['Web siteniz inceleniyor...','Sosyal medya varlığınız aranıyor...','Video içerik durumunuz değerlendiriliyor...','Rakiplerinizle karşılaştırılıyor...','Yapay zeka videosu potansiyeli hesaplanıyor...','Kişiselleştirilmiş rapor hazırlanıyor...'];
  
-const SYSTEM_PROMPT = `KRITIK KURAL: Sadece ham JSON döndür. { ile başla } ile bit. Açıklama yazma. Markdown kullanma.
-KRITIK: Yanıtın ilk karakteri { olmalı. Hiçbir açıklama, giriş cümlesi veya markdown yazma. Sadece ham JSON.
-Sen bir dijital pazarlama ve yapay zeka video içerik uzmanısın. Verilen web sitesini gerçekten ziyaret et ve analiz et. Sonucu SADECE geçerli JSON olarak ver, başka hiçbir şey yazma, markdown kullanma.
-JSON yapısı:
-{"score":0-100,"verdict":"var","summary":"2-3 cümlelik özet Türkçe","reasons":["neden 1","neden 2","neden 3"],"digital_presence":{"instagram":true,"tiktok":false,"youtube":false,"website_video":false,"active_ads":false},"video_ideas":[{"title":"kısa başlık","platform":"TikTok/Reels","scene":"max 1 cümle sahne","hook":"hook cümlesi","why":"1 cümle"},...],"first_step":"Script konusunda somut, eyleme geçilebilir yönlendirme — 2 cümle"}`;
+const SYSTEM_PROMPT = `Sen bir dijital pazarlama uzmanısın. Verilen web sitesini analiz et. SADECE ham JSON döndür, { ile başla } ile bit, hiçbir açıklama veya markdown yazma.
+
+JSON yapısı (kısa ve net tut):
+{
+  "score": 0-100,
+  "summary": "2 cümle max. Markanın durumu ve fırsatı.",
+  "reasons": ["neden 1 (1 cümle)", "neden 2 (1 cümle)", "neden 3 (1 cümle)"],
+  "digital_presence": {"instagram":true,"tiktok":false,"youtube":false,"website_video":false,"active_ads":false},
+  "video_ideas": [
+    {"title": "Video başlığı", "platform": "TikTok/Reels", "concept": "Bu video ne anlatır ve neden bu marka için işe yarar — 2 cümle max."},
+    {"title": "Video başlığı 2", "platform": "Instagram/YouTube", "concept": "Konsept — 2 cümle max."}
+  ],
+  "first_step": "1 cümle: hemen yapılacak ilk şey."
+}`;
  
 let state = { screen:'password', name:'', email:'', website:'', report:null, loadingIdx:0, progress:0, error:'' };
 let loadingTimer = null;
@@ -178,9 +187,7 @@ function renderReport() {
     <div class="section-label">Sana özel video fikirleri</div>
     ${(r.video_ideas||[]).map(idea=>`<div class="idea-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h3>${idea.title}</h3><span class="tag tag-purple" style="flex-shrink:0;font-size:10px">${idea.platform}</span></div>
-      ${idea.hook?`<div class="idea-hook">🎬 Hook: "${idea.hook}"</div>`:''}
-      ${idea.scene?`<div class="idea-scene">${idea.scene}</div>`:''}
-      ${idea.why?`<div class="idea-why">→ ${idea.why}</div>`:''}
+      ${idea.concept?`<div class="idea-scene">${idea.concept}</div>`:''}
     </div>`).join('')}
   </div>
   <div class="script-box"><h3>✦ İlk adım: Script</h3><p style="margin-top:6px">${r.first_step||'Her harika videonun temeli iyi bir script\'tir.'}</p></div>
@@ -247,7 +254,7 @@ async function runAnalysis(name, email, website) {
     const res = await fetch('/api/analyze', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:4000, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1000, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
     });
     const data = await res.json();
     console.log('[runAnalysis] Full API response:', JSON.stringify(data, null, 2));
