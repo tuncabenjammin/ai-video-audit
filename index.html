@@ -248,14 +248,27 @@ async function runAnalysis(name, email, website) {
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1500, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
     });
     const data = await res.json();
+    console.log('[runAnalysis] Full API response:', JSON.stringify(data, null, 2));
+    if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
     let jsonText = '';
     for (const block of (data.content||[])) { if(block.type==='text') { jsonText=block.text; } }
-    const parsed = JSON.parse(jsonText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());
+    console.log('[runAnalysis] Extracted text:', jsonText);
+    if (!jsonText) {
+      const blockTypes = (data.content||[]).map(b=>b.type);
+      throw new Error(`No text block found. stop_reason=${data.stop_reason} blocks=${JSON.stringify(blockTypes)}`);
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());
+    } catch(parseErr) {
+      console.error('[runAnalysis] JSON parse error:', parseErr.message, 'raw text:', jsonText);
+      throw parseErr;
+    }
     stopLoading();
     setTimeout(() => { state.report={...parsed,name,website}; state.screen='report'; render(); }, 500);
   } catch(e) {
     stopLoading();
-    setTimeout(() => { state.report=fallbackReport(name,website); state.screen='report'; render(); }, 500);
+    setTimeout(() => { state.error=e.message; state.screen='form'; render(); }, 500);
   }
 }
  
