@@ -245,7 +245,7 @@ async function runAnalysis(name, email, website) {
     const res = await fetch('/api/analyze', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1500, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
+      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1500, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
     });
     const data = await res.json();
     console.log('[runAnalysis] Full API response:', JSON.stringify(data, null, 2));
