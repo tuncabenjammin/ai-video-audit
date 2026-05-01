@@ -72,7 +72,7 @@
 <body>
 <div class="wrap" id="app"></div>
 <script>
-const API_KEY = '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';
+ 
 const APP_PASSWORD = 'seekerz2026';
 const SEEKERZ_CTA = 'https://seekerz.vercel.app/sign-up?role=brand';
  
@@ -242,9 +242,9 @@ function stopLoading() {
 async function runAnalysis(name, email, website) {
   const userPrompt = `Şu markanın web sitesini analiz et: ${website}\nKişi adı: ${name}\n1. Web sitesini ziyaret et\n2. Sitede video var mı kontrol et\n3. Instagram, TikTok, YouTube linklerini ara\n4. Google/Meta reklam varlığını değerlendir\n5. Ürün/hizmet yapısını anla\nVideo fikirleri oluştururken somut ve sinematik ol.`;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/analyze', {
       method:'POST',
-      headers:{ 'Content-Type':'application/json', 'x-api-key':API_KEY, 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1500, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
     });
     const data = await res.json();
@@ -276,3 +276,4 @@ render();
 </script>
 </body>
 </html>
+ 
