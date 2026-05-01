@@ -78,7 +78,8 @@ const SEEKERZ_CTA = 'https://seekerz.vercel.app/sign-up?role=brand';
  
 const LOADING_MSGS = ['Web siteniz inceleniyor...','Sosyal medya varlığınız aranıyor...','Video içerik durumunuz değerlendiriliyor...','Rakiplerinizle karşılaştırılıyor...','Yapay zeka videosu potansiyeli hesaplanıyor...','Kişiselleştirilmiş rapor hazırlanıyor...'];
  
-const SYSTEM_PROMPT = `Sen bir dijital pazarlama ve yapay zeka video içerik uzmanısın. Verilen web sitesini gerçekten ziyaret et ve analiz et. Sonucu SADECE geçerli JSON olarak ver, başka hiçbir şey yazma, markdown kullanma.
+const SYSTEM_PROMPT = `KRITIK: Yanıtın ilk karakteri { olmalı. Hiçbir açıklama, giriş cümlesi veya markdown yazma. Sadece ham JSON.
+Sen bir dijital pazarlama ve yapay zeka video içerik uzmanısın. Verilen web sitesini gerçekten ziyaret et ve analiz et. Sonucu SADECE geçerli JSON olarak ver, başka hiçbir şey yazma, markdown kullanma.
 JSON yapısı:
 {"score":0-100,"verdict":"var","summary":"2-3 cümlelik özet Türkçe","reasons":["neden 1","neden 2","neden 3"],"digital_presence":{"instagram":true,"tiktok":false,"youtube":false,"website_video":false,"active_ads":false},"video_ideas":[{"title":"Video başlığı","platform":"TikTok/Reels","scene":"Sahne açıklaması: kamera nerede açılıyor, ne görünüyor, hangi an yakalanıyor, nasıl bitiyor — 2-3 cümle, okuyucu videoyu zihninde canlandırabilmeli","hook":"İlk 3 saniyede söylenecek cümle","why":"Bu format neden bu marka için işe yarar — 1 cümle"},{"title":"Video başlığı 2","platform":"Instagram/YouTube","scene":"Sahne açıklaması","hook":"İlk 3 saniyede söylenecek cümle","why":"Neden işe yarar"}],"first_step":"Script konusunda somut, eyleme geçilebilir yönlendirme — 2 cümle"}`;
  
@@ -259,7 +260,11 @@ async function runAnalysis(name, email, website) {
     }
     let parsed;
     try {
-      parsed = JSON.parse(jsonText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());
+      const firstBrace = jsonText.indexOf('{');
+      const lastBrace = jsonText.lastIndexOf('}');
+      if (firstBrace === -1 || lastBrace === -1) throw new Error('JSON objesi bulunamadı: ' + jsonText.substring(0, 100));
+      const cleaned = jsonText.substring(firstBrace, lastBrace + 1);
+      parsed = JSON.parse(cleaned);
     } catch(parseErr) {
       console.error('[runAnalysis] JSON parse error:', parseErr.message, 'raw text:', jsonText);
       throw parseErr;
