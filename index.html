@@ -249,7 +249,7 @@ async function runAnalysis(name, email, website) {
     });
     const data = await res.json();
     let jsonText = '';
-    for (const block of (data.content||[])) { if(block.type==='text') { jsonText=block.text; break; } }
+    for (const block of (data.content||[])) { if(block.type==='text') { jsonText=block.text; } }
     const parsed = JSON.parse(jsonText.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());
     stopLoading();
     setTimeout(() => { state.report={...parsed,name,website}; state.screen='report'; render(); }, 500);
