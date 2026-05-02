@@ -31,6 +31,36 @@ export default async function handler(req, res) {
       }
 
       if (stopReason === 'end_turn') {
+        try {
+          const textBlock = (data.content || []).filter(b => b.type === 'text').pop();
+          if (textBlock) {
+            const firstBrace = textBlock.text.indexOf('{');
+            const lastBrace = textBlock.text.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1) {
+              const parsed = JSON.parse(textBlock.text.substring(firstBrace, lastBrace + 1));
+              await fetch(`${process.env.SUPABASE_URL}/rest/v1/ai_video_audit_leads`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': process.env.SUPABASE_ANON_KEY,
+                  'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+                  'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({
+                  name: req.body.name || '',
+                  email: req.body.email || '',
+                  website: req.body.website || '',
+                  score: parsed.score || null,
+                  ai_video_type: parsed.ai_video_type || null,
+                  summary: parsed.summary || null
+                })
+              });
+            }
+          }
+        } catch (supabaseErr) {
+          console.error('[analyze] Supabase save error:', supabaseErr.message);
+          // Don't fail the request if Supabase save fails
+        }
         return res.status(200).json(data);
       }
 

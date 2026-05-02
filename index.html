@@ -67,6 +67,12 @@
   .reason-num { color: #E8196A; font-weight: 600; flex-shrink: 0; }
   .pw-screen { min-height: 70vh; display: flex; flex-direction: column; justify-content: center; }
   .pw-note { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 8px; }
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff; padding: 0; }
+    .wrap { max-width: 100%; }
+    .cta-box a { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -257,7 +263,8 @@ function renderReport() {
     <p>Ücretsiz ilan aç, fikirlerini paylaş — AI video üreticisi sana teklif getirsin.</p>
     <a href="${SEEKERZ_CTA}" target="_blank">Hemen Ücretsiz İlan Aç →</a>
   </div>
-  <button class="btn-ghost" id="resetBtn">← Yeni analiz yap</button>`;
+  <button class="btn-ghost no-print" id="resetBtn">← Yeni analiz yap</button>
+  <button class="btn-pink no-print" id="pdfBtn" style="margin-top:10px;background:#1B2B5E">↓ Raporu PDF olarak indir</button>`;
 }
  
 function attachHandlers() {
@@ -286,6 +293,8 @@ function attachHandlers() {
   }
   const resetBtn = document.getElementById('resetBtn');
   if (resetBtn) resetBtn.addEventListener('click', () => { state.screen='form'; state.report=null; state.error=''; render(); });
+  const pdfBtn = document.getElementById('pdfBtn');
+  if (pdfBtn) pdfBtn.addEventListener('click', () => window.print());
 }
  
 function startLoading() {
@@ -314,7 +323,7 @@ async function runAnalysis(name, email, website) {
     const res = await fetch('/api/analyze', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ model:'claude-sonnet-4-5', max_tokens:1000, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
+      body: JSON.stringify({ name, email, website, model:'claude-sonnet-4-5', max_tokens:1000, tools:[{type:'web_search_20250305',name:'web_search'}], system:SYSTEM_PROMPT, messages:[{role:'user',content:userPrompt}] })
     });
     const data = await res.json();
     console.log('[runAnalysis] Full API response:', JSON.stringify(data, null, 2));
