@@ -78,19 +78,45 @@ const SEEKERZ_CTA = 'https://seekerz.vercel.app/sign-up?role=brand';
  
 const LOADING_MSGS = ['Web siteniz inceleniyor...','Sosyal medya varlığınız aranıyor...','Video içerik durumunuz değerlendiriliyor...','Rakiplerinizle karşılaştırılıyor...','Yapay zeka videosu potansiyeli hesaplanıyor...','Kişiselleştirilmiş rapor hazırlanıyor...'];
  
-const SYSTEM_PROMPT = `Sen bir dijital pazarlama uzmanısın. Verilen web sitesini analiz et. SADECE ham JSON döndür, { ile başla } ile bit, hiçbir açıklama veya markdown yazma.
+const SYSTEM_PROMPT = `Sen bir AI video strateji uzmanısın. Verilen web sitesini analiz et. SADECE ham JSON döndür, { ile başla } ile bit, açıklama veya markdown yazma.
 
-JSON yapısı (kısa ve net tut):
+ÖNEMLİ BAĞLAM: Seekerz.app platformunda masaüstünde çalışan AI video üreticileri var. Bu kişiler kamera veya telefon kullanmıyor. Tamamen yapay zeka araçlarıyla (görüntü üretimi, ses klonlama, video sentezi, avatar teknolojisi vb.) profesyonel videolar üretiyorlar. Rapor bu gerçeği yansıtmalı.
+
+AI Video Türleri (sadece bunları kullan, score'a göre en uygununu seç):
+- "AI Ürün/Hizmet Tanıtımı": Ürün görselleri + AI ses + AI animasyon, sıfır çekim
+- "AI UGC Stili": Gerçek bir kullanıcı gibi görünen ama tamamen AI üretimi video
+- "AI Founder Hikayesi": Marka sahibinin sesi/hikayesi AI araçlarıyla videoya dönüşür
+- "AI Reklam Filmi": Stüdyo kalitesinde görsel + ses, tamamen yapay zeka üretimi
+- "AI Eğitici Video": Ekran kaydı + AI anlatı + AI animasyon kombinasyonu
+- "AI Sosyal Kanıt": Gerçek testimonialmış gibi görünen AI karakter videoları
+
+Score hesaplama: İyi ürün/hizmet var + AI video yok = 75-90. Ne kadar büyük fırsat o kadar yüksek.
+
+JSON:
 {
   "score": 0-100,
-  "summary": "2 cümle max. Markanın durumu ve fırsatı.",
-  "reasons": ["neden 1 (1 cümle)", "neden 2 (1 cümle)", "neden 3 (1 cümle)"],
+  "summary": "2 cümle: Markanın potansiyeli ve kaçırdığı fırsat.",
+  "ai_video_type": "Yukarıdaki listeden en uygun 1 tür — sadece türün adı",
+  "ai_video_type_reason": "Bu AI video türü neden bu markaya özel uygun — 1 cümle",
+  "reasons": [
+    "Rakip baskısı veya kaybedilen erişim — 1 cümle",
+    "Bu markanın ürün/hizmetinin AI videoyla nasıl büyüyeceği — 1 cümle",
+    "Şu an harekete geçmek için aciliyet — 1 cümle"
+  ],
   "digital_presence": {"instagram":true,"tiktok":false,"youtube":false,"website_video":false,"active_ads":false},
   "video_ideas": [
-    {"title": "Video başlığı", "platform": "TikTok/Reels", "concept": "Bu video ne anlatır ve neden bu marka için işe yarar — 2 cümle max."},
-    {"title": "Video başlığı 2", "platform": "Instagram/YouTube", "concept": "Konsept — 2 cümle max."}
+    {
+      "title": "Kısa çarpıcı video başlığı",
+      "platform": "TikTok/Reels",
+      "concept": "AI araçlarıyla nasıl üretilir ve izleyicide ne his uyandırır — 2 cümle."
+    },
+    {
+      "title": "Kısa çarpıcı video başlığı 2",
+      "platform": "Instagram/YouTube",
+      "concept": "AI araçlarıyla nasıl üretilir ve izleyicide ne his uyandırır — 2 cümle."
+    }
   ],
-  "first_step": "1 cümle: hemen yapılacak ilk şey."
+  "first_step": "1 cümle: Seekerz'da ücretsiz ilan aç, AI video üreticisi bulsun."
 }`;
  
 let state = { screen:'password', name:'', email:'', website:'', report:null, loadingIdx:0, progress:0, error:'' };
@@ -164,38 +190,72 @@ function renderReport() {
   return `<div class="header">
     <div class="logo">seeker<span>z</span></div>
     <p style="font-size:11px;color:#7B5EA7;font-weight:500;text-transform:uppercase;letter-spacing:.08em;margin-top:10px">Analiz Tamamlandı</p>
-    <h2 style="margin-top:6px">${r.name} için Rapor</h2>
+    <h2 style="margin-top:6px">${r.name} için AI Video Raporu</h2>
   </div>
+
+  <!-- SCORE + VERDICT -->
   <div class="card"><div class="flex-row">
     <div class="score-ring" style="background:conic-gradient(#E8196A ${r.score}%, #F0EEFF ${r.score}%)">
       <div class="score-inner"><span class="score-num">${r.score}</span><span class="score-sub">/100</span></div>
     </div>
     <div style="flex:1">
-      <span class="tag ${hasNeed?'tag-green':'tag-red'}" style="margin-bottom:8px;display:inline-block">${hasNeed?'✓ İhtiyaç var':'✗ Düşük ihtiyaç'}</span>
+      <span class="tag ${hasNeed?'tag-green':'tag-red'}" style="margin-bottom:8px;display:inline-block">${hasNeed?'✓ AI videoya ihtiyacın var':'✗ Düşük öncelik'}</span>
       <p>${r.summary}</p>
     </div>
   </div></div>
+
+  <!-- AI VIDEO TÜRÜ — kilit bölüm -->
+  <div class="card" style="border-left:4px solid #E8196A;">
+    <div class="section-label">Markan için en uygun AI video türü</div>
+    <div style="display:flex;align-items:flex-start;gap:12px;margin-top:4px">
+      <div style="background:#F0EEFF;border-radius:10px;padding:10px 14px;flex-shrink:0">
+        <span style="font-size:20px">🎬</span>
+      </div>
+      <div>
+        <h3 style="font-size:16px;font-weight:700;color:#E8196A;margin-bottom:4px">${r.ai_video_type||'AI Video'}</h3>
+        <p style="font-size:14px;color:#475569">${r.ai_video_type_reason||''}</p>
+        <p style="font-size:12px;color:#94a3b8;margin-top:8px">📍 Kamera yok. Çekim yok. Tamamen yapay zeka araçlarıyla masaüstünde üretilir.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEDEN ŞIMDI -->
   <div class="card">
-    <div class="section-label">Dijital Varlık Durumu</div>
+    <div class="section-label">Neden şimdi harekete geçmeli?</div>
+    <ul class="reasons-list">${(r.reasons||[]).map((item,i)=>`<li><span class="reason-num">${i+1}.</span><span>${item}</span></li>`).join('')}</ul>
+  </div>
+
+  <!-- DİJİTAL VARLIK -->
+  <div class="card">
+    <div class="section-label">Dijital varlık durumu</div>
     <div class="presence-grid">${pItems.map(i=>`<div class="presence-item"><div class="presence-dot ${dp[i.key]?'dot-yes':'dot-no'}">${dp[i.key]?'✓':'✗'}</div>${i.label}</div>`).join('')}</div>
   </div>
-  <div class="card">
-    <div class="section-label">Neden yapay zeka videosuna ihtiyacın var?</div>
-    <ul class="reasons-list">${(r.reasons||[]).map((r,i)=>`<li><span class="reason-num">${i+1}.</span><span>${r}</span></li>`).join('')}</ul>
+
+  <!-- KÖPRÜ BÖLÜMÜ -->
+  <div style="background:linear-gradient(135deg,#1B2B5E,#7B5EA7);border-radius:16px;padding:22px;margin-bottom:14px;text-align:center">
+    <p style="font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Sıradaki adım</p>
+    <h2 style="color:#fff;font-size:18px;margin-bottom:10px">Bu videoyu kim üretecek?</h2>
+    <p style="color:rgba(255,255,255,.8);font-size:14px;margin-bottom:0">Doğru AI araçlarını ve tekniği bilen bir üretici olmadan, bu fikirler fikir olarak kalır. Seekerz'daki AI video üreticileri kamera kullanmıyor — <strong style="color:#fff">sıfır prodüksiyon maliyetiyle, tamamen yapay zeka araçlarıyla</strong> markanın videosunu masaüstünde üretiyor.</p>
   </div>
-  <div>
-    <div class="section-label">Sana özel video fikirleri</div>
+
+  <!-- FLASH FİKİRLER -->
+  <div style="margin-bottom:14px">
+    <div class="section-label">Markan için öncelikli AI video fikirleri</div>
     ${(r.video_ideas||[]).map(idea=>`<div class="idea-card">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><h3>${idea.title}</h3><span class="tag tag-purple" style="flex-shrink:0;font-size:10px">${idea.platform}</span></div>
-      ${idea.concept?`<div class="idea-scene">${idea.concept}</div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <h3 style="font-size:15px;font-weight:600">${idea.title}</h3>
+        <span class="tag tag-purple" style="flex-shrink:0;font-size:10px">${idea.platform}</span>
+      </div>
+      ${idea.concept?`<div class="idea-scene" style="margin-top:8px">${idea.concept}</div>`:''}
     </div>`).join('')}
   </div>
-  <div class="script-box"><h3>✦ İlk adım: Script</h3><p style="margin-top:6px">${r.first_step||'Her harika videonun temeli iyi bir script\'tir.'}</p></div>
+
+  <!-- FINAL CTA -->
   <div class="cta-box">
-    <p style="font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Bir sonraki adım</p>
-    <h2 style="color:#fff;margin-bottom:10px">Bu fikirleri videoya dönüştür</h2>
-    <p>Seekerz'daki yapay zeka video üreticileri markanı tanıyor ve videonu anahtar teslim hazırlıyor.</p>
-    <a href="${SEEKERZ_CTA}" target="_blank">Ücretsiz İlan Aç →</a>
+    <p style="font-size:12px;opacity:.7;margin-bottom:8px">20'den fazla AI video üreticisi seni bekliyor</p>
+    <h2 style="color:#fff;margin-bottom:10px">Videonun üretilmesini izle 🎬</h2>
+    <p>Ücretsiz ilan aç, fikirlerini paylaş — AI video üreticisi sana teklif getirsin.</p>
+    <a href="${SEEKERZ_CTA}" target="_blank">Hemen Ücretsiz İlan Aç →</a>
   </div>
   <button class="btn-ghost" id="resetBtn">← Yeni analiz yap</button>`;
 }
