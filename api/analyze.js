@@ -6,8 +6,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
-    const body = { ...req.body };
-    const messages = [...(body.messages || [])];
+    const { name, email, website, ...claudeBody } = req.body;
+    const messages = [...(claudeBody.messages || [])];
 
     for (let turn = 1; turn <= 5; turn++) {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -17,7 +17,7 @@ export default async function handler(req, res) {
           'x-api-key': process.env.ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01',
         },
-        body: JSON.stringify({ ...body, messages }),
+        body: JSON.stringify({ ...claudeBody, messages }),
       });
 
       const data = await response.json();
