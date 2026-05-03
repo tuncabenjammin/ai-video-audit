@@ -263,8 +263,7 @@ function renderReport() {
     <p>Ücretsiz ilan aç, fikirlerini paylaş — AI video üreticisi sana teklif getirsin.</p>
     <a href="${SEEKERZ_CTA}" target="_blank">Hemen Ücretsiz İlan Aç →</a>
   </div>
-  <button class="btn-ghost no-print" id="resetBtn">← Yeni analiz yap</button>
-  <button class="btn-pink no-print" id="pdfBtn" style="margin-top:10px;background:#1B2B5E">↓ Raporu PDF olarak indir</button>`;
+  <button class="btn-pink no-print" id="pdfBtn" style="margin-top:12px;width:100%;background:#1B2B5E;font-size:15px;padding:14px;border-radius:12px">↓ Raporu PDF olarak kaydet</button>`;
 }
  
 function attachHandlers() {
@@ -291,8 +290,6 @@ function attachHandlers() {
       render(); startLoading(); await runAnalysis(name,email,website);
     });
   }
-  const resetBtn = document.getElementById('resetBtn');
-  if (resetBtn) resetBtn.addEventListener('click', () => { state.screen='form'; state.report=null; state.error=''; render(); });
   const pdfBtn = document.getElementById('pdfBtn');
   if (pdfBtn) pdfBtn.addEventListener('click', () => window.print());
 }
