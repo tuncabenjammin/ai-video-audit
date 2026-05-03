@@ -7,6 +7,7 @@ export default async function handler(req, res) {
 
   try {
     const { name, email, website, ...claudeBody } = req.body;
+    claudeBody.max_tokens = 2000;
     const messages = [...(claudeBody.messages || [])];
 
     for (let turn = 1; turn <= 5; turn++) {

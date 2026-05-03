@@ -84,7 +84,9 @@ const SEEKERZ_CTA = 'https://seekerz.vercel.app/sign-up?role=brand';
  
 const LOADING_MSGS = ['Web siteniz inceleniyor...','Sosyal medya varlığınız aranıyor...','Video içerik durumunuz değerlendiriliyor...','Rakiplerinizle karşılaştırılıyor...','Yapay zeka videosu potansiyeli hesaplanıyor...','Kişiselleştirilmiş rapor hazırlanıyor...'];
  
-const SYSTEM_PROMPT = `Sen bir AI video strateji uzmanısın. Verilen web sitesini analiz et. SADECE ham JSON döndür, { ile başla } ile bit, açıklama veya markdown yazma.
+const SYSTEM_PROMPT = `KESİNLİKLE KISA TUT: Tüm JSON çıktısı 800 token'ı geçmemelidir. Her alan için belirtilen maksimum uzunluğa kesinlikle uy.
+
+Sen bir AI video strateji uzmanısın. Verilen web sitesini analiz et. SADECE ham JSON döndür, { ile başla } ile bit, açıklama veya markdown yazma.
 
 ÖNEMLİ BAĞLAM: Seekerz.app platformunda masaüstünde çalışan AI video üreticileri var. Bu kişiler kamera veya telefon kullanmıyor. Tamamen yapay zeka araçlarıyla (görüntü üretimi, ses klonlama, video sentezi, avatar teknolojisi vb.) profesyonel videolar üretiyorlar. Rapor bu gerçeği yansıtmalı.
 
